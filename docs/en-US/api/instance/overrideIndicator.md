@@ -36,6 +36,8 @@ import Tip from '../../../@components/Tip.vue'
     - `styles` Style is a method that returns the style required by the object obtained by `klinecharts.getFigureClass` .
   - `minValue` Specify a minimum value.
   - `maxValue` Specifies the maximum value.
+  - `zones` Indicator background zones. `from` and `to` are indicator values and are converted through the pane `yAxis`. Supports `color`, `opacity`, `gradient`, `visible`, and `zLevel`, and can be used by RSI, StochRSI, WR, CCI, or any custom indicator.
+  - `thresholds` Indicator threshold overflow fills. `value` is an indicator value, `direction` supports `above` and `below`, and the style fields are the same as `zones`.
   - `styles` Style configuration, the type is the same as `indicator` in the general style `Styles`.
   - `shouldUpdate` Control whether updates are needed.
   - `calc` Calculation method.

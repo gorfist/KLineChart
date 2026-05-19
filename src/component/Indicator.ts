@@ -20,7 +20,7 @@ import type Bounding from '../common/Bounding'
 import type BarSpace from '../common/BarSpace'
 import type Crosshair from '../common/Crosshair'
 import type { IndicatorStyle, IndicatorPolygonStyle, SmoothLineStyle, RectStyle, TextStyle, TooltipFeatureStyle, LineStyle, LineType, TooltipLegend } from '../common/Styles'
-import { isNumber, isValid, merge, isBoolean, isString, clone, isFunction } from '../common/utils/typeChecks'
+import { isNumber, isValid, merge, isBoolean, isString, clone, isFunction, isArray } from '../common/utils/typeChecks'
 import type { DataLoadType } from '../common/DataLoader'
 
 import type { XAxis } from './XAxis'
@@ -38,6 +38,30 @@ export type IndicatorSeries = 'normal' | 'price' | 'volume'
 export type IndicatorFigureStyle = Partial<Omit<SmoothLineStyle, 'style'>> & Partial<Omit<RectStyle, 'style'>> & Partial<TextStyle> & Partial<{ style: LineType[keyof LineType] }> & Record<string, unknown>
 
 export type IndicatorFigureAttrs = Partial<ArcAttrs> & Partial<LineStyle> & Partial<RectAttrs> & Partial<TextAttrs> & Record<string, unknown>
+
+export type IndicatorZoneGradientDirection = 'vertical' | 'horizontal'
+
+export interface IndicatorZoneGradient {
+  fromColor?: string
+  toColor?: string
+  direction?: IndicatorZoneGradientDirection
+}
+
+export interface IndicatorZone {
+  from?: number
+  to?: number
+  color?: string
+  opacity?: number
+  gradient?: IndicatorZoneGradient
+  visible?: boolean
+  zLevel?: 'belowFigures' | 'aboveFigures'
+}
+
+export interface IndicatorThreshold extends Omit<IndicatorZone, 'from' | 'to' | 'zLevel'> {
+  value: number
+  direction: 'above' | 'below'
+  zLevel?: 'belowFigures' | 'aboveFigures'
+}
 
 export interface IndicatorFigureAttrsCallbackParams<D> {
   data: NeighborData<Nullable<D>>
@@ -179,6 +203,16 @@ export interface Indicator<D = unknown, C = unknown, E = unknown> {
   figures: Array<IndicatorFigure<D>>
 
   /**
+   * Indicator background zones.
+   */
+  zones: IndicatorZone[]
+
+  /**
+   * Indicator threshold overflow fills.
+   */
+  thresholds: IndicatorThreshold[]
+
+  /**
    * Specified minimum value
    */
   minValue: Nullable<number>
@@ -316,6 +350,8 @@ export default class IndicatorImp<D = unknown, C = unknown, E = unknown> impleme
   extendData: E
   series: IndicatorSeries = 'normal'
   figures: Array<IndicatorFigure<D>> = []
+  zones: IndicatorZone[] = []
+  thresholds: IndicatorThreshold[] = []
   minValue: Nullable<number> = null
   maxValue: Nullable<number> = null
   styles: Nullable<Partial<IndicatorStyle>> = null
@@ -326,6 +362,8 @@ export default class IndicatorImp<D = unknown, C = unknown, E = unknown> impleme
     const draw = calc ||
       prev.shortName !== current.shortName ||
       prev.series !== current.series ||
+      JSON.stringify(prev.zones) !== JSON.stringify(current.zones) ||
+      JSON.stringify(prev.thresholds) !== JSON.stringify(current.thresholds) ||
       prev.minValue !== current.minValue ||
       prev.maxValue !== current.maxValue ||
       prev.precision !== current.precision ||
@@ -387,6 +425,12 @@ export default class IndicatorImp<D = unknown, C = unknown, E = unknown> impleme
       merge(this.styles, styles)
     }
     merge(this, others)
+    if (!isArray(this.zones)) {
+      this.zones = []
+    }
+    if (!isArray(this.thresholds)) {
+      this.thresholds = []
+    }
     if (isValid(calcParams)) {
       this.calcParams = calcParams
       if (isFunction(this.regenerateFigures)) {

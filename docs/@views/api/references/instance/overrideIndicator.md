@@ -21,6 +21,32 @@
       attrs?: (params: object) => object
       styles?: (params: object) => object
     }>
+    zones?: Array<{
+      from?: number
+      to?: number
+      color?: string
+      opacity?: number
+      gradient?: {
+        fromColor?: string
+        toColor?: string
+        direction?: 'vertical' | 'horizontal'
+      }
+      visible?: boolean
+      zLevel?: 'belowFigures' | 'aboveFigures'
+    }>
+    thresholds?: Array<{
+      value: number
+      direction: 'above' | 'below'
+      color?: string
+      opacity?: number
+      gradient?: {
+        fromColor?: string
+        toColor?: string
+        direction?: 'vertical' | 'horizontal'
+      }
+      visible?: boolean
+      zLevel?: 'belowFigures' | 'aboveFigures'
+    }>
     minValue?: number
     maxValue?: number
     styles?: Partial<IndicatorStyle>

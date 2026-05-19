@@ -36,6 +36,8 @@ import Tip from '../../@components/Tip.vue'
     - `styles` 样式，是一个方法，返回值是 `klinecharts.getFigureClass` 得到的对象所需要的样式。
   - `minValue` 指定最小值。
   - `maxValue` 指定最大值。
+  - `zones` 指标背景区域配置。`from` 和 `to` 是指标数值，会通过当前窗口 `yAxis` 转成像素。支持 `color`、`opacity`、`gradient`、`visible` 和 `zLevel`，可用于 RSI、StochRSI、WR、CCI 等任意指标。
+  - `thresholds` 指标阈值溢出区域配置。`value` 是指标数值，`direction` 支持 `above` 和 `below`，其它样式字段同 `zones`。
   - `styles` 样式配置，类型同通用样式 `Styles` 中的 `indicator` 。
   - `shouldUpdate` 手动控制是否需要更新。
   - `calc` 计算方法。

@@ -271,11 +271,18 @@ export interface IndicatorTooltipStyle extends TooltipStyle {
   legend: TooltipLegendStyle
 }
 
+export interface IndicatorZoneStyle {
+  bandColor: string
+  upperColor: string
+  lowerColor: string
+}
+
 export interface IndicatorStyle {
   ohlc: Pick<CandleBarColor, 'compareRule' | 'upColor' | 'downColor' | 'noChangeColor'>
   bars: IndicatorPolygonStyle[]
   lines: SmoothLineStyle[]
   circles: IndicatorPolygonStyle[]
+  zones: IndicatorZoneStyle
   lastValueMark: IndicatorLastValueMarkStyle
   tooltip: IndicatorTooltipStyle
   [key: string]: unknown
@@ -561,6 +568,11 @@ function getDefaultIndicatorStyle (): IndicatorStyle {
       downColor: alphaRed,
       noChangeColor: Color.GREY
     }],
+    zones: {
+      bandColor: hexToRgb(Color.GREY, 0.08),
+      upperColor: hexToRgb(Color.RED, 0.12),
+      lowerColor: hexToRgb(Color.GREEN, 0.12)
+    },
     lastValueMark: {
       show: false,
       text: {

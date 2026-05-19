@@ -28,6 +28,15 @@ const relativeStrengthIndex: IndicatorTemplate<Rsi, number> = {
   name: 'RSI',
   shortName: 'RSI',
   calcParams: [6, 12, 24],
+  minValue: 0,
+  maxValue: 100,
+  zones: [
+    { from: 30, to: 70 }
+  ],
+  thresholds: [
+    { value: 70, direction: 'above' },
+    { value: 30, direction: 'below' }
+  ],
   figures: [
     { key: 'rsi1', title: 'RSI1: ', type: 'line' },
     { key: 'rsi2', title: 'RSI2: ', type: 'line' },
