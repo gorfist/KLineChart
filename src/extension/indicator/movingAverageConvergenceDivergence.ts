@@ -17,92 +17,124 @@ import { formatValue } from '../../common/utils/format'
 import type { IndicatorTemplate } from '../../component/Indicator'
 
 interface Macd {
-  dif?: number
-  dea?: number
   macd?: number
+  signal?: number
+  hist?: number
+}
+
+interface MacdExtendData {
+  oscillatorMaType?: 'EMA' | 'SMA'
+  signalMaType?: 'EMA' | 'SMA'
 }
 
 /**
- * MACD：参数快线移动平均、慢线移动平均、移动平均，
- * 默认参数值12、26、9。
- * 公式：⒈首先分别计算出收盘价12日指数平滑移动平均线与26日指数平滑移动平均线，分别记为EMA(12）与EMA(26）。
- * ⒉求这两条指数平滑移动平均线的差，即：DIFF = EMA(SHORT) － EMA(LONG)。
- * ⒊再计算DIFF的M日的平均的指数平滑移动平均线，记为DEA。
- * ⒋最后用DIFF减DEA，得MACD。MACD通常绘制成围绕零轴线波动的柱形图。MACD柱状大于0涨颜色，小于0跌颜色。
+ * MACD
+ * macd = MA(CLOSE, fastLength) - MA(CLOSE, slowLength)
+ * signal = MA(macd, signalLength)
+ * hist = macd - signal
  */
-const movingAverageConvergenceDivergence: IndicatorTemplate<Macd, number> = {
+const movingAverageConvergenceDivergence: IndicatorTemplate<Macd, number, MacdExtendData> = {
   name: 'MACD',
   shortName: 'MACD',
   calcParams: [12, 26, 9],
+  extendData: {},
   figures: [
-    { key: 'dif', title: 'DIF: ', type: 'line' },
-    { key: 'dea', title: 'DEA: ', type: 'line' },
     {
-      key: 'macd',
-      title: 'MACD: ',
+      key: 'hist',
+      title: 'Hist: ',
       type: 'bar',
       baseValue: 0,
       styles: ({ data, indicator, defaultStyles }) => {
         const { prev, current } = data
-        const prevMacd = prev?.macd ?? Number.MIN_SAFE_INTEGER
-        const currentMacd = current?.macd ?? Number.MIN_SAFE_INTEGER
-        let color = ''
-        if (currentMacd > 0) {
-          color = formatValue(indicator.styles, 'bars[0].upColor', (defaultStyles!.bars)[0].upColor) as string
-        } else if (currentMacd < 0) {
-          color = formatValue(indicator.styles, 'bars[0].downColor', (defaultStyles!.bars)[0].downColor) as string
-        } else {
-          color = formatValue(indicator.styles, 'bars[0].noChangeColor', (defaultStyles!.bars)[0].noChangeColor) as string
+        const prevHist = prev?.hist
+        const currentHist = current?.hist
+        let color = formatValue(indicator.styles, 'bars[0].noChangeColor', (defaultStyles!.bars)[0].noChangeColor) as string
+        if (currentHist !== undefined) {
+          const rising = prevHist !== undefined && currentHist > prevHist
+          color = currentHist >= 0
+            ? rising ? '#26a69a' : '#b2dfdb'
+            : rising ? '#ffcdd2' : '#ff5252'
         }
-        const style = prevMacd < currentMacd ? 'stroke' : 'fill'
-        return { style, color, borderColor: color }
+        return { style: 'fill', color, borderColor: color }
       }
+    },
+    {
+      key: 'macd',
+      title: 'MACD: ',
+      type: 'line',
+      styles: () => ({ color: '#2962FF' })
+    },
+    {
+      key: 'signal',
+      title: 'Signal: ',
+      type: 'line',
+      styles: () => ({ color: '#ff6d00' })
     }
   ],
   calc: (dataList, indicator) => {
-    const params = indicator.calcParams
-    let closeSum = 0
-    let emaShort = 0
-    let emaLong = 0
-    let dif = 0
-    let difSum = 0
-    let dea = 0
-    const maxPeriod = Math.max(params[0], params[1])
-    return dataList.map((kLineData, i) => {
-      const macd: Macd = {}
-      const close = kLineData.close
-      closeSum += close
-      if (i >= params[0] - 1) {
-        if (i > params[0] - 1) {
-          emaShort = (2 * close + (params[0] - 1) * emaShort) / (params[0] + 1)
-        } else {
-          emaShort = closeSum / params[0]
-        }
+    const [fastLength, slowLength, signalLength] = indicator.calcParams
+    const { oscillatorMaType = 'EMA', signalMaType = 'EMA' } = indicator.extendData
+    const closeList = dataList.map(kLineData => kLineData.close)
+    const fastMaList = calcMa(closeList, fastLength, oscillatorMaType)
+    const slowMaList = calcMa(closeList, slowLength, oscillatorMaType)
+    const macdList = fastMaList.map((fastMa, i) => {
+      const slowMa = slowMaList[i]
+      return fastMa === undefined || slowMa === undefined ? undefined : fastMa - slowMa
+    })
+    const signalList = calcMa(macdList, signalLength, signalMaType)
+    return macdList.map((macd, i) => {
+      const result: Macd = {}
+      const signal = signalList[i]
+      if (macd !== undefined) {
+        result.macd = macd
       }
-      if (i >= params[1] - 1) {
-        if (i > params[1] - 1) {
-          emaLong = (2 * close + (params[1] - 1) * emaLong) / (params[1] + 1)
-        } else {
-          emaLong = closeSum / params[1]
-        }
+      if (signal !== undefined) {
+        result.signal = signal
       }
-      if (i >= maxPeriod - 1) {
-        dif = emaShort - emaLong
-        macd.dif = dif
-        difSum += dif
-        if (i >= maxPeriod + params[2] - 2) {
-          if (i > maxPeriod + params[2] - 2) {
-            dea = (dif * 2 + dea * (params[2] - 1)) / (params[2] + 1)
-          } else {
-            dea = difSum / params[2]
-          }
-          macd.macd = (dif - dea) * 2
-          macd.dea = dea
-        }
+      if (macd !== undefined && signal !== undefined) {
+        result.hist = macd - signal
       }
-      return macd
+      return result
     })
   }
+}
+
+function calcMa (sourceList: Array<number | undefined>, length: number, maType: 'EMA' | 'SMA'): Array<number | undefined> {
+  return maType === 'SMA' ? calcSma(sourceList, length) : calcEma(sourceList, length)
+}
+
+function calcEma (sourceList: Array<number | undefined>, length: number): Array<number | undefined> {
+  const result: Array<number | undefined> = []
+  const alpha = 2 / (length + 1)
+  let prevEma = 0
+  let hasPrevEma = false
+  sourceList.forEach((source, i) => {
+    if (source === undefined) {
+      result[i] = undefined
+      return
+    }
+    prevEma = hasPrevEma ? alpha * source + (1 - alpha) * prevEma : source
+    hasPrevEma = true
+    result[i] = prevEma
+  })
+  return result
+}
+
+function calcSma (sourceList: Array<number | undefined>, length: number): Array<number | undefined> {
+  const result: Array<number | undefined> = []
+  const values: number[] = []
+  let sum = 0
+  sourceList.forEach((source, i) => {
+    if (source !== undefined) {
+      values.push(source)
+      sum += source
+      if (values.length > length) {
+        sum -= values.shift()!
+      }
+    }
+    result[i] = values.length === length ? sum / length : undefined
+  })
+  return result
 }
 
 export default movingAverageConvergenceDivergence
