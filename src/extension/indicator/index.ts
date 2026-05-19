@@ -30,6 +30,7 @@ import directionalMovementIndex from './directionalMovementIndex'
 import easeOfMovementValue from './easeOfMovementValue'
 import exponentialMovingAverage from './exponentialMovingAverage'
 import momentum from './momentum'
+import multiTimePeriodCharts from './multiTimePeriodCharts'
 import movingAverage from './movingAverage'
 import movingAverageConvergenceDivergence from './movingAverageConvergenceDivergence'
 import onBalanceVolume from './onBalanceVolume'
@@ -51,7 +52,7 @@ const indicators: Record<string, IndicatorConstructor> = {}
 const extensions = [
   aroonOscillator, averagePrice, awesomeOscillator, bias, bollingerBands, brar,
   bullAndBearIndex, commodityChannelIndex, currentRatio, differentOfMovingAverage,
-  directionalMovementIndex, easeOfMovementValue, exponentialMovingAverage, momentum,
+  directionalMovementIndex, easeOfMovementValue, exponentialMovingAverage, momentum, multiTimePeriodCharts,
   movingAverage, movingAverageConvergenceDivergence, onBalanceVolume, priceAndVolumeTrend,
   psychologicalLine, rateOfChange, relativeStrengthIndex, simpleMovingAverage,
   stoch, stochasticRsi, stopAndReverse, tripleExponentiallySmoothedAverage, volume, volumeRatio, williamsR
