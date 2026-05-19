@@ -16,6 +16,7 @@ import type Nullable from '../../common/Nullable'
 
 import IndicatorImp, { type IndicatorTemplate, type IndicatorConstructor } from '../../component/Indicator'
 
+import aroonOscillator from './aroonOscillator'
 import averagePrice from './averagePrice'
 import awesomeOscillator from './awesomeOscillator'
 import bias from './bias'
@@ -48,7 +49,7 @@ import williamsR from './williamsR'
 const indicators: Record<string, IndicatorConstructor> = {}
 
 const extensions = [
-  averagePrice, awesomeOscillator, bias, bollingerBands, brar,
+  aroonOscillator, averagePrice, awesomeOscillator, bias, bollingerBands, brar,
   bullAndBearIndex, commodityChannelIndex, currentRatio, differentOfMovingAverage,
   directionalMovementIndex, easeOfMovementValue, exponentialMovingAverage, momentum,
   movingAverage, movingAverageConvergenceDivergence, onBalanceVolume, priceAndVolumeTrend,
