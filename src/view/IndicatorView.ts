@@ -21,6 +21,7 @@ import type Coordinate from '../common/Coordinate'
 import { eachFigures, type IndicatorFigure, type IndicatorFigureAttrs, type IndicatorFigureStyle } from '../component/Indicator'
 
 import CandleBarView, { type CandleBarOptions } from './CandleBarView'
+import { drawIndicatorZones } from './indicatorZones'
 
 export default class IndicatorView extends CandleBarView {
   override getCandleBarOptions (): Nullable<CandleBarOptions> {
@@ -77,6 +78,7 @@ export default class IndicatorView extends CandleBarView {
         } else {
           ctx.globalCompositeOperation = 'source-over'
         }
+        drawIndicatorZones(ctx, indicator, defaultStyles, yAxis, bounding, 'belowFigures')
         let isCover = false
         if (indicator.draw !== null) {
           ctx.save()
@@ -237,6 +239,7 @@ export default class IndicatorView extends CandleBarView {
             }
           })
         }
+        drawIndicatorZones(ctx, indicator, defaultStyles, yAxis, bounding, 'aboveFigures')
       }
     })
     ctx.restore()

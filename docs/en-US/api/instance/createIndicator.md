@@ -29,6 +29,8 @@ outline: deep
     - `styles` Style is a method that returns the style required by the object obtained by `klinecharts.getFigureClass` .
   - `minValue` Specify a minimum value.
   - `maxValue` Specifies the maximum value.
+  - `zones` Indicator background zones. `from` and `to` are indicator values and are converted through the pane `yAxis`. Supports `color`, `opacity`, `gradient`, `visible`, and `zLevel`, and can be used by RSI, StochRSI, WR, CCI, or any custom indicator.
+  - `thresholds` Indicator threshold overflow fills. `value` is an indicator value, `direction` supports `above` and `below`, and the style fields are the same as `zones`.
   - `styles` Style configuration, the type is the same as `indicator` in the general style `Styles`.
   - `shouldUpdate` Control whether updates are needed.
   - `calc` Calculation method.
@@ -80,6 +82,20 @@ import CreateIndicatorPaneOptionsAxis from '../../../@views/api/samples/createIn
 
 ### Setting indicator attrs {#attrs}
 <CreateIndicatorObject/>
+
+```javascript
+chart.createIndicator({
+  name: 'RSI',
+  calcParams: [14],
+  zones: [
+    { from: 30, to: 70, color: 'rgba(120,120,120,0.08)' }
+  ],
+  thresholds: [
+    { value: 70, direction: 'above', color: 'rgba(242,54,69,0.18)' },
+    { value: 30, direction: 'below', color: 'rgba(8,153,129,0.18)' }
+  ]
+})
+```
 
 ### Setting pane basic options {#paneOptions-basic}
 <CreateIndicatorPaneOptionsBasic/>
