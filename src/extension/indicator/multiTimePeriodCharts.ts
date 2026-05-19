@@ -32,10 +32,7 @@ interface MtpcExtendData {
 
 interface Mtpc {
   open?: number
-  high?: number
-  low?: number
   close?: number
-  prevClose?: number
   top?: number
   bottom?: number
   startIndex?: number
@@ -194,10 +191,7 @@ const multiTimePeriodCharts: IndicatorTemplate<Mtpc, never, MtpcExtendData> = {
     downBorderColor: DEFAULT_DOWN_BORDER_COLOR,
     downBodyColor: DEFAULT_DOWN_BODY_COLOR
   },
-  figures: [
-    { key: 'top' },
-    { key: 'bottom' }
-  ],
+  figures: [],
   calc: (dataList, indicator) => {
     const timeframe = getTimeframe(dataList, indicator)
     const periods: MtpcPeriod[] = []
@@ -229,18 +223,13 @@ const multiTimePeriodCharts: IndicatorTemplate<Mtpc, never, MtpcExtendData> = {
     const result: Mtpc[] = dataList.map(() => ({}))
     displayPeriods.forEach(period => {
       const [top, bottom] = calcTopBottom(period, calcType)
-      for (let i = period.startIndex; i <= period.endIndex; i++) {
-        result[i] = {
-          open: period.open,
-          high: period.high,
-          low: period.low,
-          close: period.close,
-          prevClose: period.prevClose,
-          top,
-          bottom,
-          startIndex: period.startIndex,
-          endIndex: period.endIndex
-        }
+      result[period.startIndex] = {
+        open: period.open,
+        close: period.close,
+        top,
+        bottom,
+        startIndex: period.startIndex,
+        endIndex: period.endIndex
       }
     })
     return result
@@ -254,16 +243,13 @@ const multiTimePeriodCharts: IndicatorTemplate<Mtpc, never, MtpcExtendData> = {
     const upBodyColor = extendData.upBodyColor ?? DEFAULT_UP_BODY_COLOR
     const downBorderColor = extendData.downBorderColor ?? DEFAULT_DOWN_BORDER_COLOR
     const downBodyColor = extendData.downBodyColor ?? DEFAULT_DOWN_BODY_COLOR
-    let lastStartIndex = -1
-    for (let i = Math.max(0, realFrom - 1); i <= realTo; i++) {
-      const data = result[i]
+    for (const data of result) {
       if (data.startIndex === undefined || data.endIndex === undefined || data.top === undefined || data.bottom === undefined) {
         continue
       }
-      if (data.startIndex === lastStartIndex) {
+      if (data.endIndex < realFrom - 1 || data.startIndex > realTo + 1) {
         continue
       }
-      lastStartIndex = data.startIndex
       const diff = (data.close ?? 0) - (data.open ?? 0)
       const bodyColor = diff < 0 ? downBodyColor : upBodyColor
       const borderColor = diff < 0 ? downBorderColor : upBorderColor
